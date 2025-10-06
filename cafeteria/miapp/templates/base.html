@@ -74,6 +74,12 @@
                         <a class="nav-link" href="{% url 'cafes' %}"><i class="fas fa-coffee me-1"></i>Cafes</a>
                     </li>
                     {% if user.is_authenticated %}
+                    {% load user_tags %}
+                        {% if user|has_group:"Administrador" %}
+                            <li>
+                                <a class="nav-link" href="{% url 'admin_ususarios' %}"><i class="fas fa-user me-1"></i>ADMIN</a>
+                            </li>
+                        {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-1"></i>Salir</a>
                     </li>

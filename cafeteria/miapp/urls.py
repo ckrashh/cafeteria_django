@@ -9,4 +9,5 @@ urlpatterns = [
     path('proveedores/', views.proveedores, name='proveedores'),
     path('cafes/', views.cafes, name='cafes'),
     path('resena/nueva/', views.form_resena, name='form_resena'),  # Nueva ruta para el formulario de reseña
+    path('admin_ususarios/', views.AdminView.as_view(), name='admin_ususarios'),
 ] 
