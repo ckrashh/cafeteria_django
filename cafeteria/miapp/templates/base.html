@@ -44,7 +44,7 @@
     </style>
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="{% url 'index' %}">
@@ -96,12 +96,13 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
-        {% block content %}
-        {% endblock %}
-    </div>
-    
-    <footer class="bg-dark text-light py-5 mt-5 " >
+    <main class="flex-grow-1">     
+        <div id="content" class="container mt-4" style="height: 100%;">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>  
+    <footer class="bg-dark text-light py-3 mt-auto " >
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-4 mb-md-0">

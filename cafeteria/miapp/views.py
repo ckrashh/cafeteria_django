@@ -1,9 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import MenuItem, Barista, Cafe, Resena, Proveedor
-from .forms import ResenaForm
+from .forms import ResenaForm, CambiarGrupoForm
 from django.http import JsonResponse
 from .mixins import PermissionProtectedTemplateView
 from sesion.models import CustomUser
+from django.core.paginator import Paginator
+from django.contrib.auth.models import Group
+from django.contrib import messages
+
 def index(request):
     resenas_destacadas = Resena.objects.all().order_by('-calificacion')[:3]
     return render(request, 'index.html', {'resenas_destacadas': resenas_destacadas})
@@ -48,6 +52,45 @@ class AdminView(PermissionProtectedTemplateView):
     model = CustomUser
     context_object_name = 'usuarios'
     paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Obtener todos los usuarios
+        usuarios_list = CustomUser.objects.all().order_by('username')
+
+        # Aplicar paginación
+        paginator = Paginator(usuarios_list, self.paginate_by)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        # Agregar al contexto
+        context['usuarios'] = page_obj
+
+        context['grupos'] = Group.objects.all().order_by('name')
+
+        # Formulario para cambiar grupo
+        context['cambiar_grupo_form'] = CambiarGrupoForm()
+
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        usuario_id = request.POST.get('usuario_id')
+        usuario = CustomUser.objects.get(id=usuario_id)
+
+        form = CambiarGrupoForm(request.POST)
+        if form.is_valid():
+            grupo = form.cleaned_data['grupo']
+            if grupo:  # Si se seleccionó un grupo
+                usuario.groups.clear()
+                usuario.groups.add(grupo)
+                messages.success(request, f"Grupo de {usuario.username} actualizado a {grupo.name}.")
+            else:  # Si no se seleccionó ningún grupo (opción en blanco)
+                usuario.groups.clear()
+                messages.success(request, f"Todos los grupos fueron removidos de {usuario.username}.")
+        else:
+            messages.error(request, "Error al actualizar el grupo.")
+
+        return redirect('admin_ususarios')
 
 def handler403(request, exception=None):
     """Manejador personalizado para errores 403 (Permiso denegado)"""
