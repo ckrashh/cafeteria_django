@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Reseñas - Aroma Celestial {% endblock %}
+{% block content %}
+<h1 class="text-center mb-5">Reseñas de Nuestros Clientes</h1>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for resena in resenas %}
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ resena.nombre_cliente }}</h5>
+                <div class="mb-2">
+                    {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= resena.calificacion %}
+                            <i class="fas fa-star text-warning"></i>
+                        {% else %}
+                            <i class="far fa-star text-warning"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <p class="card-text">{{ resena.comentario }}</p>
+            </div>
+            <div class="card-footer text-muted">
+                <small>{{ resena.fecha_creacion|date:"d/m/Y" }}</small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if resenas.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if resenas.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ resenas.previous_page_number }}">&laquo; Anterior</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
+        {% endif %}
+
+        {% for i in resenas.paginator.page_range %}
+            {% if resenas.number == i %}
+                <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if resenas.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ resenas.next_page_number }}">Siguiente &raquo;</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Siguiente &raquo;</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+<br>
+{% if user.is_authenticated %}
+<div>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#resenaModal">Agregar Reseña</button>
+</div>
+{% endif %}
+<!-- Modal para agregar reseña -->
+{% include 'form_resena.html' %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+    // Manejar el envío del formulario con AJAX
+    $('#resenaForm').on('submit', function(e) {
+        e.preventDefault();  // Evita el envío tradicional del formulario
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'form_resena' %}",
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    // Cerrar el modal del formulario
+                    $('#resenaModal').modal('hide');
+                    // Mostrar el modal de éxito
+                    $('#successModal').modal('show');
+                    $('#mensaje').text('¡Gracias ' + response.nombre_cliente + '! Tu reseña ha sido guardada con éxito.');
+                    // Recargar la página después de cerrar el modal de éxito
+                    $('#successModal').on('hidden.bs.modal', function() {
+                        location.reload();
+                    });
+                } else {
+                    alert('Error al guardar la reseña: ' + JSON.stringify(response.errors));
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error en la solicitud: ' + error);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

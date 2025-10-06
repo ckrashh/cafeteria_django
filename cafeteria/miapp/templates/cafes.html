@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Cafes - Aroma Celestial {% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">Nuestros Cafes de Confianza</h1>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for cafe in cafes %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                {% if cafe.imagen %}
+                    <img src="{{ cafe.imagen.url }}" class="card-img-top" alt="{{ cafe.nombre }}" style="height: 250px; object-fit: cover;">
+                {% else %}
+                    <img src="{% static 'img/default_barista.jpg' %}" class="card-img-top" alt="{{ cafe.nombre }}" style="height: 250px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ cafe.nombre }}</h5>
+                    <hr>
+                    <p class="card-text">{{ cafe.descripcion|truncatewords:20 }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#cafeModal{{ cafe.id }}">
+                        Conoce más
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para cada barista -->
+        <div class="modal fade" id="cafeModal{{ cafe.id }}" tabindex="-1" aria-labelledby="cafeModalLabel{{ cafe.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cafeModalLabel{{ cafe.id }}">{{ cafe.nombre }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                {% if cafe.imagen %}
+                                    <img src="{{ cafe.imagen.url }}" class="img-fluid rounded" alt="{{ cafe.nombre }}">
+                                {% else %}
+                                    <img src="{% static 'img/default_barista.jpg' %}" class="img-fluid rounded" alt="{{ cafe.nombre }}">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <h6 class="text-muted mb-3">Descripcion</h6>
+                                <p>{{ cafe.descripcion }}</p>
+                                <h6 class="text-muted mb-3">Origen</h6>
+                                <p>{{ cafe.origen }}</p>
+                                <h6 class="text-muted mb-3">Perfil sabor</h6>
+                                <p>{{ cafe.perfil_sabor }}</p>
+                                <h6 class="text-muted mb-3">Nivel tostado</h6>
+                                <p>{{ cafe.nivel_tostado }}</p>
+                                <h6 class="text-muted mb-3">Precio</h6>
+                                <p>{{ cafe.precio }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        transition: transform 0.3s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
