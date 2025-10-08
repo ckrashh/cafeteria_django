@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Admin de Usuarios - Aroma Celestial {% endblock %}
+{% block content %}
+<h1>Lista de Usuarios</h1>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Username</th>
+      <th scope="col">Nombre</th>
+      <th scope="col">Apellido</th>
+      <th>Email</th>
+      <th>Grupos Actuales</th>
+      <th>Cambiar Grupo</th>
+      <th>Eliminar usuario</th>
+      <th>Editar usuario</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for usuario in usuarios %}
+      <tr>
+        <td scope="row">{{ usuario.username }}</td>
+        <td>{{ usuario.first_name }}</td>
+        <td>{{ usuario.last_name }}</td>
+        <td>{{ usuario.email }}</td>
+        <td>
+          {% for grupo in usuario.groups.all %}
+            {{ grupo.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+        <td>
+          <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+            <input type="hidden" name="action" value="editar_grupo">
+            {{ cambiar_grupo_form.grupo }}
+            <button type="submit" class="btn btn-sm btn-primary">Cambiar</button>
+          </form>
+        </td>
+        <td>
+          <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+            <input type="hidden" name="action" value="eliminar">
+            <button type="submit" class="btn btn-sm btn-danger" >Eliminar</button>
+          </form>
+        </td>
+        <td>
+           <button class="btn btn-sm btn-info" data-bs-toggle="modal"  data-bs-target="#editarUsuarioModal{{ usuario.id }}" >Editar</button>
+           <!-- Modal para editar usuario -->
+            <div class="modal fade" id="editarUsuarioModal{{ usuario.id }}" tabindex="-1" role="dialog">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                    <input type="hidden" name="action" value="editar">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Editar Usuario: {{ usuario.username }}</h5>
+                      <button type="button" class="close" data-bs-dismiss="modal">
+                        <span>&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label for="first_name{{ usuario.id }}">Nombre</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="first_name{{ usuario.id }}"
+                          name="first_name"
+                          value="{{ usuario.first_name }}"
+                          required
+                        >
+                      </div>
+                      <div class="form-group">
+                        <label for="last_name{{ usuario.id }}">Apellido</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="last_name{{ usuario.id }}"
+                          name="last_name"
+                          value="{{ usuario.last_name }}"
+                          required
+                        >
+                      </div>
+                      <div class="form-group">
+                        <label for="email{{ usuario.id }}">Correo Electrónico</label>
+                        <input
+                          type="email"
+                          class="form-control"
+                          id="email{{ usuario.id }}"
+                          name="email"
+                          value="{{ usuario.email }}"
+                          required
+                        >
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if is_paginated %}
+  <div class="pagination">
+    <span class="step-links">
+      {% if page_obj.has_previous %}
+        <a href="?page=1">&laquo; primera</a>
+        <a href="?page={{ page_obj.previous_page_number }}">anterior</a>
+      {% endif %}
+
+      <span class="current">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">siguiente</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">última &raquo;</a>
+      {% endif %}
+    </span>
+  </div>
+{% endif %}
+<!-- Mensajes de éxito/error -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+{% endblock %}

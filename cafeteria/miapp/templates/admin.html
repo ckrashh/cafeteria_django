@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Cafes - Aroma Celestial {% endblock %}
+{% block content %}
+  <h1 class="mb-4">Panel de Administración</h1>
+  <div class="row">
+    <!-- Tarjeta para Cafés -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="bi bi-cup-hot fs-1 mb-3"></i> <!-- Icono de café (Bootstrap Icons) -->
+          <h5 class="card-title">Administrar Cafés</h5>
+          <p class="card-text">Gestiona los cafés registrados en el sistema.</p>
+          <a href="#" class="btn btn-primary">Ir a Cafés</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta para Baristas -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="bi bi-person-badge fs-1 mb-3"></i> <!-- Icono de barista -->
+          <h5 class="card-title">Administrar Baristas</h5>
+          <p class="card-text">Gestiona los baristas registrados.</p>
+          <a href="#" class="btn btn-primary">Ir a Baristas</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta para Usuarios -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="bi bi-people fs-1 mb-3"></i> <!-- Icono de usuarios -->
+          <h5 class="card-title">Administrar Usuarios</h5>
+          <p class="card-text">Gestiona los usuarios del sistema.</p>
+          <a href="{% url 'admin_usuarios' %}" class="btn btn-primary">Ir a Usuarios</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta para Proveedores -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="bi bi-truck fs-1 mb-3"></i> <!-- Icono de proveedores -->
+          <h5 class="card-title">Administrar Proveedores</h5>
+          <p class="card-text">Gestiona los proveedores registrados.</p>
+          <a href="#" class="btn btn-primary">Ir a Proveedores</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta para Reseñas -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="bi bi-star fs-1 mb-3"></i> <!-- Icono de reseñas -->
+          <h5 class="card-title">Administrar Reseñas</h5>
+          <p class="card-text">Gestiona las reseñas de los usuarios.</p>
+          <a href="#" class="btn btn-primary">Ir a Reseñas</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

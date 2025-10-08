@@ -24,3 +24,13 @@ class CambiarGrupoForm(forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = []  # No necesitas campos del modelo, solo el grupo
+
+class EditarUsuarioForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email']  # Campos editables
+        labels = {
+            'first_name': 'Nombre',
+            'last_name': 'Apellido',
+            'email': 'Correo electrónico',
+        }

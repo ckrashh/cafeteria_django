@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import MenuItem, Barista, Cafe, Resena, Proveedor
-from .forms import ResenaForm, CambiarGrupoForm
+from .forms import ResenaForm, CambiarGrupoForm, EditarUsuarioForm
 from django.http import JsonResponse
 from .mixins import PermissionProtectedTemplateView
 from sesion.models import CustomUser
@@ -46,7 +46,13 @@ def form_resena(request):
     return render(request, 'form_resena.html', {'form': form})
 
 class AdminView(PermissionProtectedTemplateView):
-    template_name = 'admin_ususarios.html'    
+    template_name = 'admin.html'
+    group_required = 'Administrador'
+    permission_required = 'cafeteria.can_edit_menu'
+    
+
+class AdminUsuariosView(PermissionProtectedTemplateView):
+    template_name = 'admin_usuarios.html'    
     group_required = 'Administrador'
     permission_required = 'cafeteria.can_edit_menu'
     model = CustomUser
@@ -71,27 +77,44 @@ class AdminView(PermissionProtectedTemplateView):
         # Formulario para cambiar grupo
         context['cambiar_grupo_form'] = CambiarGrupoForm()
 
+        # Formulario para editar usuario
+        context['editar_usuario_form'] = EditarUsuarioForm()
+
         return context
     
     def post(self, request, *args, **kwargs):
         usuario_id = request.POST.get('usuario_id')
         usuario = CustomUser.objects.get(id=usuario_id)
+        action = request.POST.get('action')
 
-        form = CambiarGrupoForm(request.POST)
-        if form.is_valid():
-            grupo = form.cleaned_data['grupo']
-            if grupo:  # Si se seleccionó un grupo
-                usuario.groups.clear()
-                usuario.groups.add(grupo)
-                messages.success(request, f"Grupo de {usuario.username} actualizado a {grupo.name}.")
-            else:  # Si no se seleccionó ningún grupo (opción en blanco)
-                usuario.groups.clear()
-                messages.success(request, f"Todos los grupos fueron removidos de {usuario.username}.")
+        #Accion para cambiar el grupo de un usuario
+        if action == 'editar_grupo':
+            form = CambiarGrupoForm(request.POST)
+            if form.is_valid():
+                grupo = form.cleaned_data['grupo']
+                if grupo:  # Si se seleccionó un grupo
+                    usuario.groups.clear()
+                    usuario.groups.add(grupo)
+                    messages.success(request, f"Grupo de {usuario.username} actualizado a {grupo.name}.")
+                else:  # Si no se seleccionó ningún grupo (opción en blanco)
+                    usuario.groups.clear()
+                    messages.success(request, f"Todos los grupos fueron removidos de {usuario.username}.")
+            else:
+                messages.error(request, "Error al actualizar el grupo.")
+        elif action == 'eliminar':
+            usuario.delete()
+            messages.success(request, f"Usuario {usuario.username} eliminado correctamente.")
+        elif action == 'editar':
+            usuario.first_name = request.POST.get('first_name')
+            usuario.last_name = request.POST.get('last_name')
+            usuario.email = request.POST.get('email')
+            usuario.save()
+            messages.success(request, f"Usuario {usuario.username} editado correctamente.")
         else:
-            messages.error(request, "Error al actualizar el grupo.")
+            messages.error(request, "Acción no reconocida.")
 
         return redirect('admin_ususarios')
-
+    
 def handler403(request, exception=None):
     """Manejador personalizado para errores 403 (Permiso denegado)"""
     return render(request, '403.html', status=403)
