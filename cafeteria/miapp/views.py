@@ -113,7 +113,7 @@ class AdminUsuariosView(PermissionProtectedTemplateView):
         else:
             messages.error(request, "Acción no reconocida.")
 
-        return redirect('admin_ususarios')
+        return redirect('admin_usuarios')
     
 def handler403(request, exception=None):
     """Manejador personalizado para errores 403 (Permiso denegado)"""
