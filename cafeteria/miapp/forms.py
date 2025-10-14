@@ -1,5 +1,5 @@
 from django import forms
-from .models import Resena
+from .models import Resena, Cafe, Barista
 from django.contrib.auth.models import Group
 from sesion.models import CustomUser
 
@@ -33,4 +33,42 @@ class EditarUsuarioForm(forms.ModelForm):
             'first_name': 'Nombre',
             'last_name': 'Apellido',
             'email': 'Correo electrónico',
+        }
+
+class CafeForm(forms.ModelForm):
+    class Meta:
+        model = Cafe
+        fields = ['nombre', 'origen', 'descripcion','precio', 'nivel_tostado', 'perfil_sabor', 'imagen']  # Ajusta los campos
+        labels = {
+            'nombre': 'Nombre',
+            'origen': 'Origen',
+            'descripcion': 'Descripcion',
+            'precio': 'Precio',
+            'nivel_tostado': 'Nivel Tostado',
+            'perfil_sabor': 'Perfil Sabor',
+            'imagen': 'Imagen',
+        }
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'class': 'form-control','rows': 2}),
+            'perfil_sabor': forms.Textarea(attrs={'class': 'form-control','rows': 2}),
+            'precio': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'nivel_tostado': forms.TextInput(attrs={'class': 'form-control'}),
+            'origen': forms.TextInput(attrs={'class': 'form-control'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'imagen': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+class BaristaForm(forms.ModelForm):
+    class Meta:
+        model = Barista
+        fields = ['nombre', 'biografia', 'foto']
+        labels = {
+            'nombre': 'Nombre',
+            'biografia': 'Biografia',
+            'foto': 'Foto',
+        }
+        widgets = {
+            'biografia': forms.Textarea(attrs={'class': 'form-control','rows': 2}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'foto': forms.FileInput(attrs={'class': 'form-control'}),
         }

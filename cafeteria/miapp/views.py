@@ -1,12 +1,13 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import MenuItem, Barista, Cafe, Resena, Proveedor
-from .forms import ResenaForm, CambiarGrupoForm, EditarUsuarioForm
+from .forms import ResenaForm, CambiarGrupoForm, EditarUsuarioForm, CafeForm, BaristaForm
 from django.http import JsonResponse
 from .mixins import PermissionProtectedTemplateView
 from sesion.models import CustomUser
 from django.core.paginator import Paginator
 from django.contrib.auth.models import Group
 from django.contrib import messages
+from django.db.models import Q
 
 def index(request):
     resenas_destacadas = Resena.objects.all().order_by('-calificacion')[:3]
@@ -52,29 +53,34 @@ class AdminView(PermissionProtectedTemplateView):
     
 
 class AdminUsuariosView(PermissionProtectedTemplateView):
-    template_name = 'admin_usuarios.html'    
+    template_name = 'admin_usuarios.html'
     group_required = 'Administrador'
     permission_required = 'cafeteria.can_edit_menu'
     model = CustomUser
     context_object_name = 'usuarios'
     paginate_by = 10
+    search_fields = ['username','first_name', 'last_name', 'email']  # Campos para buscar
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Obtener todos los usuarios
-        usuarios_list = CustomUser.objects.all().order_by('username')
+        search_query = self.request.GET.get('q', '')
 
-        # Aplicar paginación
+        if search_query:
+            q_objects = Q()
+            for field in self.search_fields:
+                q_objects |= Q(**{f"{field}__icontains": search_query})
+            usuarios_list = self.model.objects.filter(q_objects).order_by('username')
+        else:
+            usuarios_list = self.model.objects.all().order_by('username')
+
+        # Paginación
         paginator = Paginator(usuarios_list, self.paginate_by)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        # Agregar al contexto
-        context['usuarios'] = page_obj
-
-        context['grupos'] = Group.objects.all().order_by('name')
-
-        # Formulario para cambiar grupo
+        context['usuarios'] = page_obj  # En lugar de usuarios_list
+        context['search_query'] = search_query
+         # Formulario para cambiar grupo
         context['cambiar_grupo_form'] = CambiarGrupoForm()
 
         # Formulario para editar usuario
@@ -114,6 +120,162 @@ class AdminUsuariosView(PermissionProtectedTemplateView):
             messages.error(request, "Acción no reconocida.")
 
         return redirect('admin_usuarios')
+
+class CafeAdminView(PermissionProtectedTemplateView):
+    template_name = 'admin_cafe.html'
+    group_required = 'Administrador'
+    permission_required = 'cafeteria.can_edit_menu'
+    model = Cafe
+    form_class = CafeForm
+    context_object_name = 'cafes'
+    paginate_by = 10
+    search_fields = ['nombre', 'descripcion']  # Campos para buscar
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get('q', '')
+
+        if search_query:
+            q_objects = Q()
+            for field in self.search_fields:
+                q_objects |= Q(**{f"{field}__icontains": search_query})
+            cafes_list = self.model.objects.filter(q_objects).order_by('nombre')
+        else:
+            cafes_list = self.model.objects.all().order_by('nombre')
+
+        # Paginación
+        paginator = Paginator(cafes_list, self.paginate_by)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context['cafes'] = page_obj  # En lugar de cafes_list
+        context['search_query'] = search_query
+        context['form'] = self.form_class()
+
+        # Si hay un ID, cargar el café para edición
+        cafe_id = self.kwargs.get('id')
+        if cafe_id:
+            context['cafe'] = get_object_or_404(self.model, id=cafe_id)
+            context['form'] = self.form_class(instance=context['cafe'])
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+        cafe_id = request.POST.get('id')
+
+        if action == 'create':
+            return self.create(request)
+        elif action == 'update':
+            return self.update(request, cafe_id)
+        elif action == 'delete':
+            return self.delete(request, cafe_id)
+        else:
+            messages.error(request, "Acción no válida.")
+            return redirect('cafe_admin')
+
+    def create(self, request):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Café creado correctamente.")
+        else:
+            messages.error(request, "Error al crear el café.")
+        return redirect('cafe_admin')
+
+    def update(self, request, cafe_id):
+        cafe = get_object_or_404(self.model, id=cafe_id)
+        form = self.form_class(request.POST, instance=cafe)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Café actualizado correctamente.")
+        else:
+            messages.error(request, "Error al actualizar el café.")
+        return redirect('cafe_admin')
+
+    def delete(self, request, cafe_id):
+        cafe = get_object_or_404(self.model, id=cafe_id)
+        cafe.delete()
+        messages.success(request, "Café eliminado correctamente.")
+        return redirect('cafe_admin')
+    
+class BaristaAdminView(PermissionProtectedTemplateView):
+    template_name = 'admin_barista.html'
+    group_required = 'Administrador'
+    permission_required = 'cafeteria.can_edit_menu'
+    model = Barista
+    form_class = BaristaForm
+    context_object_name = 'baristas'
+    paginate_by = 10
+    search_fields = ['nombre']  # Campos para buscar
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get('q', '')
+
+        if search_query:
+            q_objects = Q()
+            for field in self.search_fields:
+                q_objects |= Q(**{f"{field}__icontains": search_query})
+            baristas_list = self.model.objects.filter(q_objects).order_by('nombre')
+        else:
+            baristas_list = self.model.objects.all().order_by('nombre')
+
+        # Paginación
+        paginator = Paginator(baristas_list, self.paginate_by)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context['baristas'] = page_obj  # En lugar de cafes_list
+        context['search_query'] = search_query
+        context['form'] = self.form_class()
+
+        # Si hay un ID, cargar el café para edición
+        barista_id = self.kwargs.get('id')
+        if barista_id:
+            context['barista'] = get_object_or_404(self.model, id=barista_id)
+            context['form'] = self.form_class(instance=context['barista'])
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+        barista_id = request.POST.get('id')
+
+        if action == 'create':
+            return self.create(request)
+        elif action == 'update':
+            return self.update(request, barista_id)
+        elif action == 'delete':
+            return self.delete(request, barista_id)
+        else:
+            messages.error(request, "Acción no válida.")
+            return redirect('barista_admin')
+
+    def create(self, request):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Barista creado correctamente.")
+        else:
+            messages.error(request, "Error al crear el Barista.")
+        return redirect('barista_admin')
+
+    def update(self, request, cafe_id):
+        cafe = get_object_or_404(self.model, id=cafe_id)
+        form = self.form_class(request.POST, instance=cafe)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Barista actualizado correctamente.")
+        else:
+            messages.error(request, "Error al actualizar el café.")
+        return redirect('barista_admin')
+
+    def delete(self, request, cafe_id):
+        cafe = get_object_or_404(self.model, id=cafe_id)
+        cafe.delete()
+        messages.success(request, "Barista eliminado correctamente.")
+        return redirect('barista_admin')
     
 def handler403(request, exception=None):
     """Manejador personalizado para errores 403 (Permiso denegado)"""

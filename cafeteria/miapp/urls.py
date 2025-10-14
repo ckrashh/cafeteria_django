@@ -11,4 +11,8 @@ urlpatterns = [
     path('cafes/', views.cafes, name='cafes'),
     path('resena/nueva/', views.form_resena, name='form_resena'),  # Nueva ruta para el formulario de reseña
     path('admin_usuarios/', views.AdminUsuariosView.as_view(), name='admin_usuarios'),
+    path('admin_cafes/', views.CafeAdminView.as_view(), name='cafe_admin'),
+    path('admin_cafes/<int:id>/', views.CafeAdminView.as_view(), name='cafe_admin'),
+    path('admin_baristas/', views.BaristaAdminView.as_view(), name='barista_admin'),
+    path('admin_baristas/<int:id>/', views.BaristaAdminView.as_view(), name='barista_admin'),
 ] 

@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}Administrar Cafés - Cafeteria{% endblock %}
+{% block content %}
+<script>
+   function abrirModalEliminar(id) {
+        $('#eliminarID').val(id);
+        $('#eliminarCafeModal').modal('show');
+      }
+</script>
+<div class="container mt-4">
+  <h1>Administrar Cafés</h1>
+  <!-- Formulario de búsqueda -->
+  <form method="get" class="mb-4">
+    <div class="input-group">
+      <input
+        type="text"
+        name="q"
+        class="form-control"
+        placeholder="Buscar por nombre o descripción..."
+        value="{{ search_query }}"
+      >
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+      <a href="{% url 'cafe_admin' %}" class="btn btn-secondary">
+        <i class="bi bi-x-lg"></i> Limpiar
+      </a>
+    </div>
+  </form>
+
+  <!-- Botón para agregar café -->
+  <button
+    type="button"
+    class="btn btn-success mb-3"
+    data-bs-toggle="modal"
+    data-bs-target="#cafeModal"
+  >
+    <i class="bi bi-plus-lg"></i> Agregar Café
+  </button>
+
+ <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cafe in cafes %}
+        <tr>
+          <td>{{ cafe.nombre }}</td>
+          <td>{{ cafe.descripcion }}</td>
+          <td>${{ cafe.precio }}</td>
+          <td>
+            <a
+              href="{% url 'cafe_admin' cafe.id %}"
+              class="btn btn-warning btn-sm"
+              style="display: inline;"
+
+            > Editar
+            </a>
+            </td>
+            <td>
+              <button
+                type="button"
+                class="btn btn-danger btn-sm inline"
+                onclick="abrirModalEliminar({{ cafe.id }})"
+              > Eliminar
+              </button>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5">No se encontraron cafés{% if search_query %} para "{{ search_query }}"{% endif %}.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if cafes.paginator.num_pages > 1 %}
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      {% if cafes.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?q={{ search_query }}&page=1">&laquo; Primera</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?q={{ search_query }}&page={{ cafes.previous_page_number }}">Anterior</a>
+        </li>
+      {% endif %}
+      <li class="page-item disabled">
+        <span class="page-link">
+          Página {{ cafes.number }} de {{ cafes.paginator.num_pages }}
+        </span>
+      </li>
+      {% if cafes.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?q={{ search_query }}&page={{ cafes.next_page_number }}">Siguiente</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?q={{ search_query }}&page={{ cafes.paginator.num_pages }}">Última &raquo;</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+
+  <!-- Modal para crear/editar -->
+  <div class="modal fade" id="cafeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="{% if cafe %}update{% else %}create{% endif %}">
+          {% if cafe %}
+            <input type="hidden" name="id" value="{{ cafe.id }}">
+          {% endif %}
+          <div class="modal-header">
+            <h5 class="modal-title">
+              {% if cafe %}Editar{% else %}Crear{% endif %} Café
+            </h5>
+            <button type="button" class="close" data-bs-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            {{ form.as_p }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- modal para confirmar eliminación  -->
+  <div class="modal fade" id="eliminarCafeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete">
+          <input id="eliminarID" type="hidden" name="id" value="">
+          <div class="modal-header">
+            <h5 class="modal-title">Eliminar Café</h5>
+            <button type="button" class="close" data-bs-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            ¿Está seguro de querer eliminar el Café "{{ cafe.nombre }}"?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-danger">
+              Eliminar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensajes de éxito/error -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+<!-- Script para abrir el modal al cargar la página (si hay un ID en la URL) -->
+{% if cafe %}
+  <script>
+    $(document).ready(function() {
+      $('#cafeModal').modal('show');
+      
+    });
+  </script>
+{% endif %}
+{% endblock %}
