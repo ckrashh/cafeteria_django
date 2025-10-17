@@ -60,7 +60,7 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # 4. Instalar dependencias
-pip install -r requerimientos.txt
+pip install -r requirements.txt
 
 # 5. Aplicar migraciones
 python manage.py migrate
@@ -92,4 +92,5 @@ Git (para control de versiones).
 
 Proyecto funcional en fase de desarrollo educativo.
 Puede ser ampliado con funcionalidades adicionales como autenticación de usuarios, integración de bases de datos externas o sistemas de pedidos en línea.
+
 
