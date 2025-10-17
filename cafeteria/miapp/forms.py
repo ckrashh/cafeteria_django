@@ -1,5 +1,5 @@
 from django import forms
-from .models import Resena, Cafe, Barista
+from .models import Resena, Cafe, Barista, Proveedor
 from django.contrib.auth.models import Group
 from sesion.models import CustomUser
 
@@ -9,7 +9,7 @@ class ResenaForm(forms.ModelForm):
         fields = ['nombre_cliente', 'comentario', 'calificacion']
         widgets = {
             'nombre_cliente': forms.TextInput(attrs={'class': 'form-control'}),
-            'comentario': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'comentario': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
             'calificacion': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 5}),
         }
 
@@ -71,4 +71,19 @@ class BaristaForm(forms.ModelForm):
             'biografia': forms.Textarea(attrs={'class': 'form-control','rows': 2}),
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'foto': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+class ProveedorForm(forms.ModelForm):
+    class Meta:
+        model = Proveedor
+        fields = ['nombre', 'contacto', 'direccion']
+        labels = {
+            'nombre': 'Nombre',
+            'contacto': 'Contacto',
+            'direccion': 'Direccion',
+        }
+        widgets = {
+            'contacto': forms.EmailInput(attrs={'class': 'form-control'}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
         }

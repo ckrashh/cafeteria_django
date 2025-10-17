@@ -42,6 +42,26 @@
             border-color: #d5b895;
             color: #2c2c2c;
         }
+        /* Ajusta el tamaño de los badges en móviles */
+        @media (max-width: 767.98px) {
+            .badge {
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+            }
+        }
+
+        /* Ajusta el tamaño de los inputs en el modal */
+        .modal-body .form-control {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Asegura que los botones no sean demasiado grandes en móviles */
+        @media (max-width: 575.98px) {
+            .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>

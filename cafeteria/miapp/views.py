@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import MenuItem, Barista, Cafe, Resena, Proveedor
-from .forms import ResenaForm, CambiarGrupoForm, EditarUsuarioForm, CafeForm, BaristaForm
+from .forms import ResenaForm, CambiarGrupoForm, EditarUsuarioForm, CafeForm, BaristaForm, ProveedorForm
 from django.http import JsonResponse
 from .mixins import PermissionProtectedTemplateView
 from sesion.models import CustomUser
@@ -276,6 +276,162 @@ class BaristaAdminView(PermissionProtectedTemplateView):
         cafe.delete()
         messages.success(request, "Barista eliminado correctamente.")
         return redirect('barista_admin')
+
+class ProveedorAdminView(PermissionProtectedTemplateView):
+    template_name = 'admin_proveedores.html'
+    group_required = 'Administrador'
+    permission_required = 'cafeteria.can_edit_menu'
+    model = Proveedor
+    form_class = ProveedorForm
+    context_object_name = 'proveedores'
+    paginate_by = 10
+    search_fields = ['nombre']  # Campos para buscar
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get('q', '')
+
+        if search_query:
+            q_objects = Q()
+            for field in self.search_fields:
+                q_objects |= Q(**{f"{field}__icontains": search_query})
+            proveedores_list = self.model.objects.filter(q_objects).order_by('nombre')
+        else:
+            proveedores_list = self.model.objects.all().order_by('nombre')
+
+        # Paginación
+        paginator = Paginator(proveedores_list, self.paginate_by)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context['proveedores'] = page_obj  # En lugar de cafes_list
+        context['search_query'] = search_query
+        context['form'] = self.form_class()
+
+        # Si hay un ID, cargar el café para edición
+        proveedor_id = self.kwargs.get('id')
+        if proveedor_id:
+            context['proveedor'] = get_object_or_404(self.model, id=proveedor_id)
+            context['form'] = self.form_class(instance=context['proveedor'])
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+        barista_id = request.POST.get('id')
+
+        if action == 'create':
+            return self.create(request)
+        elif action == 'update':
+            return self.update(request, barista_id)
+        elif action == 'delete':
+            return self.delete(request, barista_id)
+        else:
+            messages.error(request, "Acción no válida.")
+            return redirect('proveedor_admin')
+
+    def create(self, request):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "proveedor creado correctamente.")
+        else:
+            messages.error(request, "Error al crear el Proveedor.")
+        return redirect('proveedor_admin')
+
+    def update(self, request, proveedor_id):
+        proveedor = get_object_or_404(self.model, id=proveedor_id)
+        form = self.form_class(request.POST, instance=proveedor)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Proveedor actualizado correctamente.")
+        else:
+            messages.error(request, "Error al actualizar el Proveedor.")
+        return redirect('proveedor_admin')
+
+    def delete(self, request, cafe_id):
+        cafe = get_object_or_404(self.model, id=cafe_id)
+        cafe.delete()
+        messages.success(request, "Proveedor eliminado correctamente.")
+        return redirect('proveedor_admin')
+    
+class ResenaAdminView(PermissionProtectedTemplateView):
+    template_name = 'admin_resenas.html'
+    group_required = 'Administrador'
+    permission_required = 'cafeteria.can_edit_menu'
+    model = Resena
+    form_class = ResenaForm
+    context_object_name = 'resenas'
+    paginate_by = 10
+    search_fields = ['nombre_cliente']  # Campos para buscar
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get('q', '')
+
+        if search_query:
+            q_objects = Q()
+            for field in self.search_fields:
+                q_objects |= Q(**{f"{field}__icontains": search_query})
+            resenas_list = self.model.objects.filter(q_objects).order_by('nombre_cliente')
+        else:
+            resenas_list = self.model.objects.all().order_by('nombre_cliente')
+
+        # Paginación
+        paginator = Paginator(resenas_list, self.paginate_by)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context['resenas'] = page_obj  # En lugar de cafes_list
+        context['search_query'] = search_query
+        context['form'] = self.form_class()
+
+        # Si hay un ID, cargar el café para edición
+        proveedor_id = self.kwargs.get('id')
+        if proveedor_id:
+            context['resena'] = get_object_or_404(self.model, id=proveedor_id)
+            context['form'] = self.form_class(instance=context['resena'])
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+        resena_id = request.POST.get('id')
+
+        if action == 'create':
+            return self.create(request)
+        elif action == 'update':
+            return self.update(request, resena_id)
+        elif action == 'delete':
+            return self.delete(request, resena_id)
+        else:
+            messages.error(request, "Acción no válida.")
+            return redirect('resena_admin')
+
+    def create(self, request):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Reseña creada correctamente.")
+        else:
+            messages.error(request, "Error al crear el Proveedor.")
+        return redirect('resena_admin')
+
+    def update(self, request, proveedor_id):
+        proveedor = get_object_or_404(self.model, id=proveedor_id)
+        form = self.form_class(request.POST, instance=proveedor)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Reseña actualizada correctamente.")
+        else:
+            messages.error(request, "Error al actualizar la Reseña.")
+        return redirect('resena_admin')
+
+    def delete(self, request, cafe_id):
+        cafe = get_object_or_404(self.model, id=cafe_id)
+        cafe.delete()
+        messages.success(request, "Proveedor eliminado correctamente.")
+        return redirect('proveedor_admin')
     
 def handler403(request, exception=None):
     """Manejador personalizado para errores 403 (Permiso denegado)"""

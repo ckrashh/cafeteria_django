@@ -15,4 +15,8 @@ urlpatterns = [
     path('admin_cafes/<int:id>/', views.CafeAdminView.as_view(), name='cafe_admin'),
     path('admin_baristas/', views.BaristaAdminView.as_view(), name='barista_admin'),
     path('admin_baristas/<int:id>/', views.BaristaAdminView.as_view(), name='barista_admin'),
+    path('admin_proveedor/', views.ProveedorAdminView.as_view(), name='proveedor_admin'),
+    path('admin_proveedor/<int:id>/', views.ProveedorAdminView.as_view(), name='proveedor_admin'),
+    path('admin_resena/', views.ResenaAdminView.as_view(), name='resena_admin'),
+    path('admin_resena/<int:id>/', views.ResenaAdminView.as_view(), name='resena_admin'),
 ] 
