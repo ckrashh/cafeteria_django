@@ -19,4 +19,6 @@ urlpatterns = [
     path('admin_proveedor/<int:id>/', views.ProveedorAdminView.as_view(), name='proveedor_admin'),
     path('admin_resena/', views.ResenaAdminView.as_view(), name='resena_admin'),
     path('admin_resena/<int:id>/', views.ResenaAdminView.as_view(), name='resena_admin'),
+    path('test/', views.testView.as_view(), name='test'),
+    path('test/<int:id>/', views.testView.as_view(), name='test')
 ] 

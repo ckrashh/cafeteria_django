@@ -1,0 +1,46 @@
+{% extends 'test.html' %}
+{% block table %}
+ <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for object in cafes %}
+          <tr>
+            <td>{{ object.id }}</td>
+            <td>{{ object.nombre }}</td>
+            <td>{{ object.descripcion }}</td>
+            <td>
+              <a
+                href="{% url 'test' object.id %}"
+                class="btn btn-warning btn-sm"
+              >
+                Editar
+              </a>
+              <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="id" value="{{ object.id }}">
+                <button
+                  type="submit"
+                  class="btn btn-danger btn-sm"
+                  onclick="return confirm('¿Eliminar {{ object.nombre }}?')"
+                >
+                  Eliminar
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4">No se encontraron registros.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}

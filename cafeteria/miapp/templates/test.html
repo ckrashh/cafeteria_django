@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1>Administrar {{ model_verbose_name }}</h1>
+
+  <!-- Mensajes -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Formulario de búsqueda -->
+  <form method="get" class="mb-4">
+    <div class="input-group">
+      <input
+        type="text"
+        name="q"
+        class="form-control"
+        placeholder="Buscar..."
+        value="{{ search_query }}"
+      >
+      <button type="submit" class="btn btn-primary">Buscar</button>
+      <a href="{% url 'cafe_admin' %}" class="btn btn-secondary">Limpiar</a>
+    </div>
+  </form>
+
+  <!-- Botón para agregar -->
+  <button
+    type="button"
+    class="btn btn-primary mb-3"
+    data-bs-toggle="modal"
+    data-bs-target="#objectModal"
+  >
+    Agregar {{ model_verbose_name }}
+  </button>
+
+  <!-- Tabla de objetos -->
+  <div class="table-responsive">
+    {% block table %}
+    {% endblock table %}
+  </div>
+
+  <!-- Modal para crear/editar -->
+  <div class="modal fade" id="objectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="{% if object %}update{% else %}create{% endif %}">
+          {% if object %}
+            <input type="hidden" name="id" value="{{ object.id }}">
+          {% endif %}
+          <div class="modal-header">
+            <h5 class="modal-title">
+              {% if object %}Editar{% else %}Crear{% endif %} {{ model_verbose_name }}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {{ form.as_p }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script para abrir el modal si hay un objeto -->
+{% if object %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var modal = new bootstrap.Modal(document.getElementById('objectModal'));
+      modal.show();
+    });
+  </script>
+{% endif %}
+{% endblock %}
