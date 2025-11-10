@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-2da=^_w1iso$zv_*gv^pnv3h2)-4#*yokfk7kz_mq@6od=zvrd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['cafeteria-django.onrender.com','127.0.0.1']
 
 AUTH_USER_MODEL = 'sesion.CustomUser'
 
