@@ -27,8 +27,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'miapp',
-    'sesion',
+    'cafeteria.miapp',
+    'cafeteria.sesion',
 ]
 
 MIDDLEWARE = [
